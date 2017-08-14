@@ -9,9 +9,10 @@
 
 import json
 import sqlite3
+import time
 
 # SQLite DB Name
-DB_Name =  "IoT.db"
+DB_Name =  "/var/www/html/IoT.db"
 
 #===============================================================
 # Database Manager Class
@@ -36,16 +37,17 @@ class DatabaseManager():
 # Functions to push Sensor Data into Database
 
 # Function to save Temperature to DB Table
-def DHT22_Temp_Data_Handler(jsonData):
+def DHT22_Temp_Data_Handler(Topic, jsonData):
 	#Parse Data 
 	json_Dict = json.loads(jsonData)
-	SensorID = json_Dict['Sensor_ID']
-	Data_and_Time = json_Dict['Date']
-	Temperature = json_Dict['Temperature']
+	SensorID = Topic
+	Date = time.strftime("%x")
+	Time = time.strftime("%X")
+	Temperature = jsonData
 	
 	#Push into DB Table
 	dbObj = DatabaseManager()
-	dbObj.add_del_update_db_record("insert into DHT22_Temperature_Data (SensorID, Date_n_Time, Temperature) values (?,?,?)",[SensorID, Data_and_Time, Temperature])
+	dbObj.add_del_update_db_record("insert into DHT22_Temperature_Data (SensorID, Date, Time, Temperature) values (?,?,?,?)",[SensorID, Date, Time, Temperature])
 	del dbObj
 	print "Inserted Temperature Data into Database."
 	print ""
@@ -70,9 +72,6 @@ def DHT22_Humidity_Data_Handler(jsonData):
 # Master Function to Select DB Funtion based on MQTT Topic
 
 def sensor_Data_Handler(Topic, jsonData):
-	if Topic == "Home/BedRoom/DHT22/Temperature":
-		DHT22_Temp_Data_Handler(jsonData)
-	elif Topic == "Home/BedRoom/DHT22/Humidity":
-		DHT22_Humidity_Data_Handler(jsonData)	
-
+	DHT22_Temp_Data_Handler(Topic, jsonData)
+	
 #===============================================================
